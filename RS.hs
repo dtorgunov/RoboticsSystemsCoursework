@@ -1,31 +1,8 @@
+module Main where
 import Data.List
 
--- We define a matrix to be a nested list
-type Vector a = [a]
-type Matrix a = [Vector a]
-type Domain = Double
-
-
--- INPUTS
--- The axis parameters and toolset coordinates we're working with
-d1 = 160.0
-a2 = 100.0
-a3 = 100.0
-d5 = 50.0
-
-parameters :: [ [Domain] ]
-parameters = [ [d1, 0.0, -90],
-               [0.0, a2, 0.0],
-               [0.0, a3, 0.0],
-               [0.0, 0.0, -90],
-               [d5, 0.0, 0.0] ]
-
-tool :: Matrix Domain
-tool = [[10.0], [0.0], [10.0], [1.0]]
-
-inputs :: [[Domain]]
-inputs = [[0,0,0,-90,0],[10,0,0,-90,0],[20,0,0,-90,0]]
-
+import Inputs
+    
 -- Matrix manipulation
 -- Dot product
 (<.>) :: Num a => Vector a -> Vector a -> a
