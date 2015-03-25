@@ -53,11 +53,11 @@ dh [d, a, alphaDeg] = \thetaDeg ->
 
 -- Applies a list of functions to a list of arguments
 applyList :: [(a -> b)]  -> [a] -> [b]
-f `applyList` arg = map (\(f, x) -> f x) $ zip f arg
+fs `applyList` arg = zipWith ($) fs arg
 
 -- Gets the final transform
 accumulate :: (Num a) => [Matrix a] -> Matrix a
-accumulate = foldr (\x acc -> x <*> acc) (i 4)
+accumulate = foldr (<*>) (i 4)
              
 -- example :: [CReal]
 -- example = [0, 0, 0, -90, 0]
