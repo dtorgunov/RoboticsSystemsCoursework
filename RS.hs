@@ -1,5 +1,4 @@
 import Data.List
-import Data.Number.CReal
 
 -- We define a matrix to be a nested list
 type Vector a = [a]
@@ -23,6 +22,9 @@ parameters = [ [d1, 0.0, -90],
 
 tool :: Matrix Domain
 tool = [[10.0], [0.0], [10.0], [1.0]]
+
+inputs :: [[Domain]]
+inputs = [[0,0,0,-90,0],[10,0,0,-90,0],[20,0,0,-90,0]]
 
 -- Matrix manipulation
 -- Dot product
@@ -77,5 +79,86 @@ tFunctions = map dh
 transform :: [[Domain]] -> [Domain] -> Matrix Domain
 transform axis thetas = accumulate $ (tFunctions axis) `applyList` thetas
 
--- Testing
-test example = (transform parameters example) <*> tool
+-- Main. See printing functions below
+main :: IO ()
+main = do
+  -- A list of per-axis transformation-generating functions for a given axis configuration
+  -- Partially applying 'transform'
+  let tf = transform parameters
+  -- Apply the transformation to each of the given theta configurations
+  -- Produces a list of transformations from TCS to WCS for each set of thetas
+  let ts = map tf inputs
+  -- Multiply each of the transforms by the TCS vector
+  -- Produces a list of coordinates in WCS for each of the theta configuration
+  let results = map (\t -> t <*> tool) ts
+
+  -- Print the axis parameters
+  putStrLn $ underlinedTitle "Axis Parameters"
+  putStrLn ""
+  putStrLn $ makeTable ["d", "a", "alpha"] (map (map approxShow) parameters)
+
+
+  -- Print the tool data
+  putStrLn $ underlinedTitle "Tool position"
+  putStrLn ""
+  putStrLn $ makeTable ["x", "y", "z"] [(map show $ take 3 $ head $ transpose tool)]
+  putStrLn "\nRelateive to the TCS\n"
+
+  -- Print the axis positions
+  putStrLn $ underlinedTitle "Axis Positions"
+  putStrLn ""
+  putStrLn (makeTable (axisHeaders (length parameters))
+                          $ zipWith axisData inputs results)
+-- Printing functions
+
+underlinedTitle :: String -> String
+underlinedTitle title = title ++ "\n" ++ (map (\_ -> '=') title)
+
+-- Make a table out of a list
+pad :: Int -> String -> String
+pad n s = replicate (n - (length s)) ' ' ++ s
+
+-- A column width is 2 more than the longest line in the table
+determineCWidth :: [String] -> Int
+determineCWidth = (+2) . head . reverse . sort . map length
+
+makeTable :: [String] -> [[String]] -> String
+makeTable headers values
+    = let allFields = headers ++ (concat values)
+          columnWidth = determineCWidth allFields
+          headerWidth = (length headers)*columnWidth
+          padLine = map (pad columnWidth)
+          formatLine = foldr (++) [] . padLine
+          titleLine = formatLine headers
+          underline = replicate headerWidth '-'
+          contentsLines = map formatLine values
+          contents = foldr (\acc line -> acc ++ "\n" ++ line) [] contentsLines
+      in
+        titleLine ++ "\n" ++ underline ++ "\n" ++ contents
+
+-- Display a number as a String, rounding to 2 decimal digits
+approxShow :: Domain -> String
+approxShow n
+    = let  (q, r) = properFraction (n * 100)
+           (r',_) = properFraction (r * 10)
+           q' = if r' >= 5 then (q+1) else q
+      in
+        show $ (fromIntegral q') / 100.0
+  
+      
+
+-- Prepare a data regarding an axis, given a list of theta values and an (augmented) column vector of x,y,z in WCS
+axisData :: [Domain] -> Matrix Domain -> [String]
+axisData thetas wcs
+    = map approxShow thetas ++ [approxShow x] ++ [approxShow y] ++ [approxShow z]
+    where
+      x = head $ wcs !! 0
+      y = head $ wcs !! 1
+      z = head $ wcs !! 2
+
+-- Generate axis headers
+axisHeaders :: Int -> [String]
+axisHeaders n = as ++ coords
+    where
+      coords = ["x0", "y0", "z0"]
+      as = map ("axis "++) $ map show $ take n [1..]
