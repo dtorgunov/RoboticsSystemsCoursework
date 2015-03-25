@@ -25,11 +25,11 @@ tool = [[10.0], [0.0], [10.0], [1.0]]
 
 -- Dot product
 (<.>) :: Num a => Vector a -> Vector a -> a
-n <.> m = sum $ map (uncurry (*)) $ zip n m
+n <.> m = sum $ zipWith (*) n m
     
 -- Matrix multiplication
 (<*>) :: Num a => Matrix a -> Matrix a -> Matrix a
-m <*> n = [ [ sum $ zipWith (*) mr nc | nc <- (transpose n) ] | mr <- m ]
+m <*> n = [ [ mrows <.> ncolumns | ncolumns <- (transpose n) ] | mrows <- m ]
          
 -- Theta-variable DH-matrix
 dh [d, a, alphaDeg] = \thetaDeg ->
