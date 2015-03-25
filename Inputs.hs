@@ -12,7 +12,7 @@ type Matrix a = [Vector a]
 --(d1, a2, a3, d5, x5, y5, z5) = (160, 100, 100, 50, 10, 0, 10)
 
 -- Full set of axis parameters, taking above into account
-parameters :: [[Domain]]
+parameters :: Matrix Domain
 parameters = [ [ d1,   0, -90 ]
              , [  0,  a2,   0 ]
              , [  0,  a3,   0 ]
