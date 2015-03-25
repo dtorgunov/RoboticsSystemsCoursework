@@ -69,5 +69,13 @@ fs `applyList` arg = zipWith ($) fs arg
 accumulate :: (Num a) => [Matrix a] -> Matrix a
 accumulate = foldr (<*>) (i 4)
 
+-- Given a list of axis parameters, return a list of theta-dependant functions/matrices
+tFunctions :: [[Domain]] -> [Domain -> Matrix Domain]
+tFunctions = map dh
+
+-- Given a list of axis parameters and current values of theta, return a transformation matrix from TCS to WCS
+transform :: [[Domain]] -> [Domain] -> Matrix Domain
+transform axis thetas = accumulate $ (tFunctions axis) `applyList` thetas
+
 -- Testing
-test example = (accumulate $ (map dh parameters) `applyList` example) <*> tool
+test example = (transform parameters example) <*> tool
