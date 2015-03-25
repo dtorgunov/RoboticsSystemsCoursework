@@ -30,6 +30,15 @@ n <.> m = sum $ zipWith (*) n m
 -- Matrix multiplication
 (<*>) :: Num a => Matrix a -> Matrix a -> Matrix a
 m <*> n = [ [ mrows <.> ncolumns | ncolumns <- (transpose n) ] | mrows <- m ]
+
+-- Define an n-by-n identity matrix
+i :: Num a => Integer -> Matrix a
+i n = map (\x -> map kronecker x) positions
+    where
+      -- Kronecker delta function
+      kronecker (i, j) | i == j = 1
+                       | otherwise = 0
+      positions = [[(i,j) | j <- [1 .. n]] | i <- [1 .. n]]
          
 -- Theta-variable DH-matrix
 dh [d, a, alphaDeg] = \thetaDeg ->
@@ -48,11 +57,8 @@ f `applyList` arg = map (\(f, x) -> f x) $ zip f arg
 
 -- Gets the final transform
 accumulate :: (Num a) => [Matrix a] -> Matrix a
-accumulate = foldr (\x acc -> x <*> acc) [ [1,0,0,0]
-                                         , [0,1,0,0]
-                                         , [0,0,1,0]
-                                         , [0,0,0,1]]
-
+accumulate = foldr (\x acc -> x <*> acc) (i 4)
+             
 -- example :: [CReal]
 -- example = [0, 0, 0, -90, 0]
 
