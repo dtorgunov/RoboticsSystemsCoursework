@@ -7,6 +7,7 @@ type Matrix a = [Vector a]
 type Domain = Double
 
 
+-- INPUTS
 -- The axis parameters and toolset coordinates we're working with
 d1 = 160.0
 a2 = 100.0
@@ -23,6 +24,7 @@ parameters = [ [d1, 0.0, -90],
 tool :: Matrix Domain
 tool = [[10.0], [0.0], [10.0], [1.0]]
 
+-- Matrix manipulation
 -- Dot product
 (<.>) :: Num a => Vector a -> Vector a -> a
 n <.> m = sum $ zipWith (*) n m
@@ -40,17 +42,25 @@ i n = map (\x -> map kronecker x) positions
                        | otherwise = 0
       positions = [[(i,j) | j <- [1 .. n]] | i <- [1 .. n]]
          
+-- Denavit-Hartenberg matrix
+degToRad :: (Floating a) => a -> a
+degToRad deg = deg * pi / 180
+
 -- Theta-variable DH-matrix
-dh [d, a, alphaDeg] = \thetaDeg ->
-                      let theta = degToRad thetaDeg
-                          alpha = degToRad alphaDeg
-                      in
-                        [ [ (cos theta), (-1) * (cos alpha) * (sin theta),  (sin alpha) * (sin theta), a * (cos theta) ],
-                      [ (sin theta), (cos alpha) * (cos theta), (-1) * (sin alpha) * (cos theta), a * (sin theta) ],
-                      [ 0, (sin alpha), (cos alpha), d ],
-                      [ 0, 0, 0, 1] ]
+dh [d, a, alphaDeg]
+    = \thetaDeg ->
+      let theta = degToRad thetaDeg
+          alpha = degToRad alphaDeg
+      in
+        [ [ (c theta), (-1)*(c alpha)*(s theta),      (s alpha)*(s theta), a*(c theta) ]
+        , [ (s theta),      (c alpha)*(c theta), (-1)*(s alpha)*(c theta), a*(s theta) ]
+        , [         0,                (s alpha),                (c alpha),           d ]
+        , [         0,                        0,                        0,           1 ] ]
+    where
+      c = cos
+      s = sin
 
-
+-- Data combinatiors
 -- Applies a list of functions to a list of arguments
 applyList :: [(a -> b)]  -> [a] -> [b]
 fs `applyList` arg = zipWith ($) fs arg
@@ -58,11 +68,6 @@ fs `applyList` arg = zipWith ($) fs arg
 -- Gets the final transform
 accumulate :: (Num a) => [Matrix a] -> Matrix a
 accumulate = foldr (<*>) (i 4)
-             
--- example :: [CReal]
--- example = [0, 0, 0, -90, 0]
 
-degToRad :: (Floating a) => a -> a
-degToRad deg = deg * pi / 180
-
+-- Testing
 test example = (accumulate $ (map dh parameters) `applyList` example) <*> tool
