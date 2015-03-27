@@ -138,7 +138,7 @@ dh [d, a, alphaDeg]
 -- Applies a list of functions to a list of arguments
 -- I.e. (f:fs) `applyList` (arg:args) == (f arg):(fs `applyList` args)
 applyList :: [(a -> b)]  -> [a] -> [b]
-fs `applyList` arg = zipWith ($) fs arg
+applyList = zipWith ($)
 
 -- Gets the final transform, but multiplying a given list of matrices
 -- with a 4-by-4 identity matrix as the starting value
