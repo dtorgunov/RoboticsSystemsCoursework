@@ -95,15 +95,15 @@ inputs = [ [  0,   0,   0,  -90,   0 ]
 -- MATRIX OPERATIONS --
 
 -- Dot product
-(<.>) :: Num a => Vector a -> Vector a -> a
+(<.>)   :: Num a => Vector a -> Vector a -> a
 n <.> m = sum $ zipWith (*) n m
     
 -- Matrix multiplication, defined in terms of (<.>)
-(<*>) :: Num a => Matrix a -> Matrix a -> Matrix a
+(<*>)   :: Num a => Matrix a -> Matrix a -> Matrix a
 m <*> n = [ [ mrows <.> ncolumns | ncolumns <- (transpose n) ] | mrows <- m ]
 
 -- Define an n-by-n identity matrix, using the Kronecker delta function
-i :: Num a => Integer -> Matrix a
+i   :: Num a => Integer -> Matrix a
 i n = map (\x -> map kronecker x) positions
     where
       -- Kronecker delta function
@@ -113,12 +113,13 @@ i n = map (\x -> map kronecker x) positions
          
 -- Since the angles in the input set are all in degrees, we introduce a function to
 -- convert degrees to radians
-degToRad :: (Floating a) => a -> a
+degToRad     :: (Floating a) => a -> a
 degToRad deg = deg * pi / 180
 
 
 -- Denavit-Hartenberg matrix
 -- Theta-variable DH-matrix. All angle parameters are taken to be expressed in degrees
+dh :: Floating a => [a] -> a -> Matrix a
 dh [d, a, alphaDeg]
     = \thetaDeg ->
       let theta = degToRad thetaDeg
@@ -150,7 +151,7 @@ tFunctions :: [[Domain]] -> [Domain -> Matrix Domain]
 tFunctions = map dh
 
 -- Given a list of axis parameters and current values of theta, return a transformation matrix from TCS to WCS
-transform :: [[Domain]] -> [Domain] -> Matrix Domain
+transform             :: [[Domain]] -> [Domain] -> Matrix Domain
 transform axis thetas = accumulate $ (tFunctions axis) `applyList` thetas
 
 -- MAIN --
@@ -189,11 +190,11 @@ main = do
   
 -- PRINTING HELPERS --
 
-underlinedTitle :: String -> String
+underlinedTitle       :: String -> String
 underlinedTitle title = title ++ "\n" ++ (map (\_ -> '=') title)
 
 -- Pad a String with spaces at the front, to have length n
-pad :: Int -> String -> String
+pad     :: Int -> String -> String
 pad n s = replicate (n - (length s)) ' ' ++ s
 
 -- A column width is 2 more than the longest line in the table
@@ -237,7 +238,7 @@ axisData thetas wcs
       z = head $ wcs !! 2
 
 -- Generate axis headers to be used as part of a table
-axisHeaders :: Int -> [String]
+axisHeaders   :: Int -> [String]
 axisHeaders n = as ++ coords
     where
       coords = ["x0", "y0", "z0"]
